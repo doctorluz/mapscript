@@ -37,7 +37,7 @@ function AddLayer($oMap,$LayerArray)
     //class of layer with line color
     if (array_key_exists('class', $LayerArray)) {
     
-    	$ClassArray=$LayerArray["class"];  // This test (for existence) will throw an error in the Apache logs - ignore it.
+      $ClassArray=$LayerArray["class"];  // This test (for existence) will throw an error in the Apache logs - ignore it.
 
         $oClass=ms_newClassObj($oLayer);
         $oClass->set("name",$ClassArray["name"]);
@@ -59,6 +59,11 @@ function AddLayer($oMap,$LayerArray)
 
 }; //end of function
 
+function cleanParamValue($r, $inString)
+{
+  $retVal = isset($r[strtoupper($inString)]) ? $r[strtoupper($inString)] : $r[$inString];
+  return trim($retVal);
+}
 /*
  * Uncomment to debug
  */
@@ -76,6 +81,9 @@ foreach ($_REQUEST as $k=>$v) {
   $request->setParameter($k,$v);
 };
 
+// Make an upper and lower-case version of the params to handle user error
+$req_down = array_change_key_case($REQUEST, CASE_LOWER);
+
 //$config = parse_ini_file('../config/config.ini', 1);
 //$errorfile = $config['mapserver']['errorfile'];
 //$shapedir = $config['mapserver']['shapedir'];
@@ -89,24 +97,24 @@ $oMap->set("debug",MS_OFF);
 $oMap->set("shapepath","/");
 //$oMap->set("shapepath","/srv/www/htdocs/mstmp/");
 
-$datafile = $_REQUEST["data"];
+$datafile = cleanParamValue($_REQUEST,'data');
 
-$coords = explode(",", $_REQUEST["BBOX"]);
+$coords = explode(",", cleanParamValue($_REQUEST,'bbox'));
 $llx = (float)$coords[0];
 $lly = (float)$coords[1];
 $urx = (float)$coords[2];
 $ury = (float)$coords[3];
 
-$epsg = "+init=epsg:" . $_REQUEST["epsg"];
+$epsg = "+init=epsg:" . cleanParamValue($_REQUEST,'epsg');
 
-$RGB = $_REQUEST["RGB"];
+$RGB = cleanParamValue($_REQUEST,'rgb');
 
 $proc=null;
-if ($_REQUEST["autoscale"] === 'YES') {
-	// TODO - work out how to ignore certain values - (for scaling striped images) - tried "NODATA=0,0,0" but it didn't work
-	$proc = array("NODATA=0", "BANDS=" . $RGB, "SCALE_1=AUTO", "SCALE_2=AUTO", "SCALE_3=AUTO");
+if (strtoupper(cleanParamValue($_REQUEST,'autoscale')) === 'YES') {
+  // TODO - work out how to ignore certain values - (for scaling striped images) - tried "NODATA=0,0,0" but it didn't work
+  $proc = array("NODATA=0", "BANDS=" . $RGB, "SCALE_1=AUTO", "SCALE_2=AUTO", "SCALE_3=AUTO");
 } else {
-	$proc = array("BANDS=" . $RGB);
+  $proc = array("BANDS=" . $RGB);
 }
 
 //$w = $_REQUEST["WIDTH"];
@@ -154,17 +162,17 @@ $oMap->setMetadata("ows_srs","EPSG:" . $_REQUEST["epsg"]);
              "type"=>MS_LAYER_RASTER
              ),
 
-        	"metadata"=>array("ows_srs"=>"EPSG:" . $_REQUEST["epsg"],
+          "metadata"=>array("ows_srs"=>"EPSG:" . $_REQUEST["epsg"],
              "wms_format"=>"image/png",
               "ows_extent"=>$llx . $lly . $urx . $ury,
              "ows_title"=>"PAIS imagery"),
 
-      		 "processing"=>$proc
-      		 //"processing"=>array("BANDS=" . $RGB, "SCALE_1=AUTO", "SCALE_2=AUTO", "SCALE_3=AUTO")
-      		//"processing"=>array("BANDS=" . $RGB)
-			 );
-			 
-		$oMap=AddLayer($oMap,$Layer);
+           "processing"=>$proc
+           //"processing"=>array("BANDS=" . $RGB, "SCALE_1=AUTO", "SCALE_2=AUTO", "SCALE_3=AUTO")
+          //"processing"=>array("BANDS=" . $RGB)
+       );
+       
+    $oMap=AddLayer($oMap,$Layer);
 
 ms_ioinstallstdouttobuffer(); //if added before the warnings and error are outputed to the image buffer
 
