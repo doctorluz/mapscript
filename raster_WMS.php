@@ -17,6 +17,7 @@ function AddLayer($oMap,$LayerArray)
      */
 
     $oLayer=ms_newLayerObj($oMap);
+    $oLayer->offsite->setRGB(0,0,0);
     //Standard set
     $SetArray=$LayerArray["set"];
     foreach ($SetArray as $k=>$v){
@@ -82,7 +83,7 @@ foreach ($_REQUEST as $k=>$v) {
 };
 
 // Make an upper and lower-case version of the params to handle user error
-$req_down = array_change_key_case($REQUEST, CASE_LOWER);
+$req_down = array_change_key_case($_REQUEST, CASE_LOWER);
 
 //$config = parse_ini_file('../config/config.ini', 1);
 //$errorfile = $config['mapserver']['errorfile'];
@@ -150,13 +151,12 @@ $oMap->setMetadata("ows_title","Demo server");
 $oMap->setMetadata("ows_onlineresource","http://h03-dev-vm3.jrc.it/mapserver_utils/raster_WMS.php");
 $oMap->setMetadata("ows_srs","EPSG:" . $_REQUEST["epsg"]);
 
-
       //Raster example
       $Layer=array(
         "set"=>array(
              "status" => MS_ON,
              "name"=>"rasterLayer",
-
+  
              "data"=> "/rasterdata/data/pais/" . $datafile,
             "dump"=>MS_TRUE,
              "type"=>MS_LAYER_RASTER
