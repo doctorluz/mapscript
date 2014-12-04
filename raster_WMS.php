@@ -1,5 +1,5 @@
 <?php
-function AddLayer($oMap,$LayerArray)
+function AddLayer($oMap,$LayerArray, $t1, $t2, $t3)
 {
     /**
      * Generic function that adds a Layer to the Map object based on a description array.
@@ -17,7 +17,11 @@ function AddLayer($oMap,$LayerArray)
      */
 
     $oLayer=ms_newLayerObj($oMap);
-    $oLayer->offsite->setRGB(0,0,0);
+    // If a transparency value has been requested, set it here (default will be 0,0,0)  TODO - think about whether images should be transparent by default
+    if ($t1)
+    {
+      $oLayer->offsite->setRGB($t1, $t2, $t3);
+    }
     //Standard set
     $SetArray=$LayerArray["set"];
     foreach ($SetArray as $k=>$v){
@@ -62,8 +66,15 @@ function AddLayer($oMap,$LayerArray)
 
 function cleanParamValue($r, $inString)
 {
-  $retVal = isset($r[strtoupper($inString)]) ? $r[strtoupper($inString)] : $r[$inString];
-  return trim($retVal);
+  if (!isset($r[strtoupper($inString)]) && !isset($r[$inString]))
+  {
+    return null;
+  }
+  else
+  {
+    $retVal = isset($r[strtoupper($inString)]) ? $r[strtoupper($inString)] : $r[$inString];
+    return trim($retVal);
+  }
 }
 /*
  * Uncomment to debug
@@ -99,16 +110,36 @@ $oMap->set("shapepath","/");
 //$oMap->set("shapepath","/srv/www/htdocs/mstmp/");
 
 $datafile = cleanParamValue($_REQUEST,'data');
+// Mandatory parameter - TODO handle absence by generating a useful error
 
+// Mandatory parameter - TODO handle absence by generating a useful error
 $coords = explode(",", cleanParamValue($_REQUEST,'bbox'));
 $llx = (float)$coords[0];
 $lly = (float)$coords[1];
 $urx = (float)$coords[2];
 $ury = (float)$coords[3];
 
+// Default RGB values for transparency
+$tr1 = 0;
+$tr2 = 0;
+$tr3 = 0;
+// Optional parameter
+$transparency = cleanParamValue($_REQUEST,'transparent');
+if ($transparency)
+{
+  $tArray = explode(",", $transparency);
+  $tr1 = (int)$tArray[0];
+  $tr2 = (int)$tArray[1];
+  $tr3 = (int)$tArray[2];
+}
+
+// Mandatory parameter - TODO handle absence by generating a useful error
 $epsg = "+init=epsg:" . cleanParamValue($_REQUEST,'epsg');
 
+// Optional parameter
 $RGB = cleanParamValue($_REQUEST,'rgb');
+// Default RGB values for band combination
+if (!$RGB) $RGB = "5,4,3";
 
 $proc=null;
 if (strtoupper(cleanParamValue($_REQUEST,'autoscale')) === 'YES') {
@@ -171,8 +202,8 @@ $oMap->setMetadata("ows_srs","EPSG:" . $_REQUEST["epsg"]);
            //"processing"=>array("BANDS=" . $RGB, "SCALE_1=AUTO", "SCALE_2=AUTO", "SCALE_3=AUTO")
           //"processing"=>array("BANDS=" . $RGB)
        );
-       
-    $oMap=AddLayer($oMap,$Layer);
+    // For now, there is always a default transparency of 0,0,0 - TODO - allow nulls to be passed in for the last 3 parameters if appropriate   
+    $oMap=AddLayer($oMap,$Layer, $tr1, $tr2, $tr3);
 
 ms_ioinstallstdouttobuffer(); //if added before the warnings and error are outputed to the image buffer
 
