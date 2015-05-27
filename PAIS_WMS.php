@@ -14,6 +14,7 @@ function AddLayer($oMap,$LayerArray, $t1, $t2, $t3)
      * Attention to the scale values of mapserver ("SCALE=0,21") automatic scaling is time consuming
      * 
      * Extensively based on Jorge's code: edited January 2011 by L. Bastin to allow dynamic selection of images / shapefiles
+     *  test comment to check whether we can override git public/private default keys in home directory
      */
 
     $oLayer=ms_newLayerObj($oMap);
