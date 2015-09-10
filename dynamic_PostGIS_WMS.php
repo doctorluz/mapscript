@@ -13,6 +13,7 @@ function UpdateLayer($oMap,$LayerArray, $projString)
      * Reedited L Bastin 2015 to connect to PostGIS and allow a user to set thresholds for colouring polygons
      */
     $oLayer=$oMap->getLayer(0);
+    
     //Standard set
     $SetArray=$LayerArray["set"];
 
