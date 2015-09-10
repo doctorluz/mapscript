@@ -60,6 +60,7 @@ function AddLayer($oMap,$LayerArray, $t1, $t2, $t3)
             $oLayer->setProcessing($v);
         }
     }
+
     return($oMap);
 
 
@@ -177,7 +178,8 @@ $oMap->web->set ("imagepath", "/srv/www/htdocs/mstmp/"); // web image directory
 $oMap->web->set ("imageurl", "/mstmp/"); //web url directory
 
 $oMap->setConfigOption('MS_ERRORFILE', '/tmp/ms_pais_wms.log');
-$oMap->setConfigOption('MS_ENCRYPTION_KEY', "/home/webuser/mapfiles/key.txt");
+// Encryption key not needed because these are tiffs, there's no connection string to be decoded
+//$oMap->setConfigOption('MS_ENCRYPTION_KEY', "/home/webuser/mapfiles/key.txt");
 
 //General web service information
 // THIS ERRORS IN MAPSERVER 6!! because the map->web->metadata command returns a webObj, NOT the hashtable
